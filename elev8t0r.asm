@@ -3,6 +3,7 @@
 .org 0
     jmp RESET
 
+.include "macros.asm"
 .include "sleep.asm"
 .include "lcd.asm"
 
@@ -14,14 +15,12 @@ RESET:
 
     rcall setup_lcd
 
-    ldi ZH, HIGH(welcome_str_1 << 1)
-    ldi ZL, LOW(welcome_str_1 << 1)
+    loadY welcome_str_1
     rcall lcd_puts
 
     rcall lcd_set_line_2
 
-    ldi ZH, HIGH(welcome_str_2 << 1)
-    ldi ZL, LOW(welcome_str_2 << 1)
+    loadY welcome_str_2
     rcall lcd_puts
 
 halt:
