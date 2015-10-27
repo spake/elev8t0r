@@ -16,12 +16,12 @@ RESET:
 
     rcall setup_lcd
 
-    loadZCode welcome_str_1
+    loadZ CODE(welcome_str_1)
     rcall lcd_puts
 
     rcall lcd_set_line_2
 
-    loadZCode welcome_str_2
+    loadZ CODE(welcome_str_2)
     rcall lcd_puts
 
 halt:

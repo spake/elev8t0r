@@ -14,6 +14,4 @@
     ldi ZL, LOW(@0)
 .endmacro
 
-.macro loadZCode
-    loadZ (@0 << 1)
-.endmacro
+#define CODE(x) ((x) << 1)
