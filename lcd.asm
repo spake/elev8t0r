@@ -30,6 +30,31 @@ setup_lcd:
 
     ret
 
+; write string to LCD
+; input: Z, addr of null-terminated string in program memory
+lcd_puts:
+    push r16
+lcd_puts_loop:
+    lpm r16, Z+
+    cpi r16, 0
+    breq lcd_puts_end
+
+    rcall lcd_data
+    rcall lcd_wait
+
+    rjmp lcd_puts_loop
+lcd_puts_end:
+    pop r16
+    ret
+
+lcd_clear_display:
+    do_lcd_command 0b00000001
+    ret
+
+lcd_set_line_2:
+	do_lcd_command 0b11000000 ; move cursor to 2nd line
+    ret
+
 .equ LCD_RS = 7
 .equ LCD_E = 6
 .equ LCD_RW = 5

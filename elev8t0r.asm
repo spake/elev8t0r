@@ -14,28 +14,18 @@ RESET:
 
     rcall setup_lcd
 
-    do_lcd_data 'e'
-    do_lcd_data 'l'
-    do_lcd_data 'e'
-    do_lcd_data 'v'
-    do_lcd_data '8'
-    do_lcd_data 't'
-    do_lcd_data '0'
-    do_lcd_data 'r'
-    
-    do_lcd_command 0b11000000 ; move cursor to 2nd line
+    ldi ZH, HIGH(welcome_str_1 << 1)
+    ldi ZL, LOW(welcome_str_1 << 1)
+    rcall lcd_puts
 
-    do_lcd_data 'b'
-    do_lcd_data 'y'
-    do_lcd_data ' '
-    do_lcd_data 'G'
-    do_lcd_data 'r'
-    do_lcd_data 'o'
-    do_lcd_data 'u'
-    do_lcd_data 'p'
-    do_lcd_data ' '
-    do_lcd_data 'F'
-    do_lcd_data '6'
+    rcall lcd_set_line_2
+
+    ldi ZH, HIGH(welcome_str_2 << 1)
+    ldi ZL, LOW(welcome_str_2 << 1)
+    rcall lcd_puts
 
 halt:
     rjmp halt
+
+welcome_str_1: .db "    elev8t0r    ", 0
+welcome_str_2: .db "   by Group F6  ", 0
