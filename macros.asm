@@ -9,7 +9,11 @@
     st Y, temp
 .endmacro
 
-.macro loadY
-    ldi ZH, HIGH(@0 << 1)
-    ldi ZL, LOW(@0 << 1)
+.macro loadZ
+    ldi ZH, HIGH(@0)
+    ldi ZL, LOW(@0)
+.endmacro
+
+.macro loadZCode
+    loadZ (@0 << 1)
 .endmacro

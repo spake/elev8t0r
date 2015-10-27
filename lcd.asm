@@ -55,6 +55,57 @@ lcd_set_line_2:
 	do_lcd_command 0b11000000 ; move cursor to 2nd line
     ret
 
+; draws an 8-bit number to the screen in decimal
+; input: r16
+lcd_draw_number:
+	push r17
+	push r18
+	push r20
+
+	ldi r18, 0 ; digit count
+lcd_draw_number_loop:
+	ldi r17, 10
+
+    ; get r16 = (r16 / 10) and r17 = (r16 % 10)
+	rcall divide
+
+	ldi r20, '0'
+	add r20, r17
+
+    ; push digits (from least to most significant) onto the stack
+	push r20
+	inc r18
+
+	cpi r16, 0
+	breq lcd_draw_number_print
+	rjmp lcd_draw_number_loop
+lcd_draw_number_print:
+	cpi r18, 0
+	breq lcd_draw_number_finish
+
+    ; pop digit from stack (from most to least significant) and print
+	pop r20
+    mov r16, r20
+    rcall lcd_data
+    rcall lcd_wait
+
+	dec r18
+	rjmp lcd_draw_number_print
+lcd_draw_number_finish:
+	pop r20
+	pop r18
+	pop r17
+	ret
+
+; draws a single digit
+draw_digit:
+	push r16
+	mov r16, r20
+	rcall lcd_data
+	rcall lcd_wait
+	pop r16
+	ret
+
 .equ LCD_RS = 7
 .equ LCD_E = 6
 .equ LCD_RW = 5

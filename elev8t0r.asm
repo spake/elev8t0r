@@ -3,9 +3,10 @@
 .org 0
     jmp RESET
 
-.include "macros.asm"
-.include "sleep.asm"
 .include "lcd.asm"
+.include "macros.asm"
+.include "math.asm"
+.include "sleep.asm"
 
 RESET:
     ldi r16, low(RAMEND)
@@ -15,12 +16,12 @@ RESET:
 
     rcall setup_lcd
 
-    loadY welcome_str_1
+    loadZCode welcome_str_1
     rcall lcd_puts
 
     rcall lcd_set_line_2
 
-    loadY welcome_str_2
+    loadZCode welcome_str_2
     rcall lcd_puts
 
 halt:
