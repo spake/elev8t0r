@@ -3,8 +3,8 @@
 .org 0
     jmp RESET
 
-.include "lcd.asm"
 .include "macros.asm"
+.include "lcd.asm"
 .include "math.asm"
 .include "sleep.asm"
 
