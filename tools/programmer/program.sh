@@ -2,10 +2,16 @@
 
 DIR="`dirname $0`"
 
+HEX="$1"
+if [ "$HEX" = "" ]; then
+    NAME="`basename $0`"
+    echo "Usage: $NAME <hex file>"
+    exit 1
+fi
+
 AVRDUDE_EXE="$DIR/avrdude"
 AVRDUDE_CONF="$DIR/avrdude.conf"
 PORT="`echo /dev/tty.usbmodem*`"
-HEX="$1"
 
 if ! [ -f "$AVRDUDE_EXE" ]; then
     echo "avrdude executable $AVRDUDE_EXE not found"
