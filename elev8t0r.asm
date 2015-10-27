@@ -3,6 +3,7 @@
 .org 0
     jmp RESET
 
+.include "sleep.asm"
 .include "lcd.asm"
 
 RESET:
