@@ -8,7 +8,8 @@ elev8t0r.hex: elev8t0r.asm
 .PHONY: clean program
 
 program: elev8t0r.hex
-	tools/programmer/program.sh elev8t0r.hex
+	$(PROGRAM) elev8t0r.hex
 
 clean:
 	rm -f elev8t0r.hex
+
