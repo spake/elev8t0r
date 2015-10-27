@@ -13,3 +13,23 @@
 .endmacro
 
 #define CODE(x) ((x) << 1)
+
+.macro debugstr
+    ; jump over the string
+    rjmp SKIP
+
+    ; write string in memory
+    .set STR_ADDR = PC
+    .db @0, 0
+
+    ; print line to UART for debugging
+SKIP:
+    push ZH
+    push ZL
+
+    loadZ CODE(STR_ADDR)
+    rcall uart_println
+
+    pop ZL
+    pop ZH
+.endmacro

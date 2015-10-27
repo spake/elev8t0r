@@ -7,15 +7,20 @@
 .include "macros.asm"
 .include "math.asm"
 .include "sleep.asm"
+.include "uart.asm"
 
 RESET:
+    ; initialise stack
     ldi r16, low(RAMEND)
     out SPL, r16
     ldi r16, high(RAMEND)
     out SPH, r16
 
+    ; set up things
     rcall setup_lcd
+    rcall uart_init
 
+    ; print demo strings to lcd
     loadZ CODE(welcome_str_1)
     rcall lcd_puts
 
@@ -23,6 +28,9 @@ RESET:
 
     loadZ CODE(welcome_str_2)
     rcall lcd_puts
+
+    debugstr "Welcome..."
+    debugstr "...to the world of tomorrow!"
 
 halt:
     rjmp halt
