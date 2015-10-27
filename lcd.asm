@@ -97,15 +97,6 @@ lcd_draw_number_finish:
 	pop r17
 	ret
 
-; draws a single digit
-draw_digit:
-	push r16
-	mov r16, r20
-	rcall lcd_data
-	rcall lcd_wait
-	pop r16
-	ret
-
 .equ LCD_RS = 7
 .equ LCD_E = 6
 .equ LCD_RW = 5
