@@ -1,9 +1,11 @@
 #!/bin/sh
 
-AVRDUDE_EXE=./avrdude
-AVRDUDE_CONF=avrdude.conf
+DIR="`dirname $0`"
+
+AVRDUDE_EXE="$DIR/avrdude"
+AVRDUDE_CONF="$DIR/avrdude.conf"
 PORT="`echo /dev/tty.usbmodem*`"
-HEX=$1
+HEX="$1"
 
 if ! [ -f "$AVRDUDE_EXE" ]; then
     echo "avrdude executable $AVRDUDE_EXE not found"
