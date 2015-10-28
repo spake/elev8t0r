@@ -3,17 +3,13 @@
     ldi ZL, LOW(@0)
 .endmacro
 
-; The macro clear16s a word (2 bytes) in a memory
-; the parameter @0 is the memory address for that word
-.macro clear16
-    loadZ @0
-    clr temp
-    st Y+, temp ; clear16 the two bytes at @0 in SRAM
-    st Y, temp
+.macro loadX
+    ldi XH, HIGH(@0)
+    ldi XL, LOW(@0)
 .endmacro
 
 ; sets X to the value pointed to by Z in dseg
-.macro load16
+.macro load16X
     push ZH
     push ZL
 
@@ -26,7 +22,7 @@
 .endmacro
 
 ; sets the value pointed to by Z in dseg to X
-.macro store16
+.macro store16X
     push ZH
     push ZL
 
@@ -36,6 +32,17 @@
 
     pop ZL
     pop ZH
+.endmacro
+
+.macro store16
+    push XH
+    push XL
+
+    loadX @1
+    load16X @0
+
+    pop XL
+    pop XH
 .endmacro
 
 #define CODE(x) ((x) << 1)

@@ -26,9 +26,9 @@ timer0OC:
     in r16, SREG
     push r16
 
-    load16 Msec1
+    load16X Msec1
     adiw X, 1
-    store16 Msec1
+    store16X Msec1
 
     ; restore SREG
     pop r16

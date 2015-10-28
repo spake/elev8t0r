@@ -47,7 +47,7 @@ RESET:
 
     debugstr "Waiting for Msec1 to be non-zero"
 loop:
-    load16 Msec1
+    load16X Msec1
 
     cpi XH, 4
     brge loop_print
@@ -56,9 +56,7 @@ loop:
 loop_print:
     debugstr "ping"
 
-    clr XL
-    clr XH
-    store16 Msec1
+    store16X Msec1, 0
 
     rjmp loop
 
