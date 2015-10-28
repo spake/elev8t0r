@@ -16,6 +16,7 @@ FloorTimer:
 .include "macros.asm"
 .include "lcd.asm"
 .include "math.asm"
+.include "motor.asm"
 .include "sleep.asm"
 .include "strobe.asm"
 .include "timer.asm"
@@ -42,6 +43,7 @@ RESET:
     rcall timer_init
     rcall keypad_init
     rcall strobe_init
+    rcall motor_init
 
     ; enable interrupts
     sei

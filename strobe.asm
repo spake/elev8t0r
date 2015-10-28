@@ -1,4 +1,4 @@
-.equ STROBE_PIN = 1
+.equ STROBE_PIN = 1 ; PA3
 
 strobe_init:
     sbi DDRA, STROBE_PIN
