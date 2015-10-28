@@ -18,6 +18,7 @@ Msec1:
 .include "state.asm"
 .include "timer.asm"
 .include "uart.asm"
+.include "keypad.asm"
 
 RESET:
     ; initialise stack
@@ -33,6 +34,7 @@ RESET:
     ; set up other things
     rcall lcd_init
     rcall timer_init
+    rcall keypad_init
     
     ; enable interrupts
     sei
@@ -57,6 +59,7 @@ RESET:
     rcall update_lcd
 
 main_loop:
+    rcall keypad_update
     rjmp main_loop
 
 wait_loop:
