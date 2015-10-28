@@ -15,6 +15,7 @@ Msec1:
 .include "lcd.asm"
 .include "math.asm"
 .include "sleep.asm"
+.include "state.asm"
 .include "timer.asm"
 .include "uart.asm"
 
@@ -45,7 +46,19 @@ RESET:
     loadZ CODE(welcome_str_2)
     rcall lcd_puts
 
-    dbgprintln "Going into ping loop"
+    ; initialise state
+    store8 State, 0
+
+    ; initialise current floor
+    store8 CurrentFloor, 0
+
+    dbgprintln "Entering state loop"
+
+    rcall update_lcd
+
+main_loop:
+    rjmp main_loop
+
 wait_loop:
     load16X Msec1
     cpi16X 1000
@@ -57,9 +70,6 @@ wait_ping:
     DBGREG(XH)
     DBGREG(XL)
     rjmp wait_loop
-
-halt:
-    rjmp halt
 
 welcome_str_1: .db "    elev8t0r    ", 0
 welcome_str_2: .db "   by Group F6  ", 0

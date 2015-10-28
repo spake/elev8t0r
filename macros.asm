@@ -21,6 +21,18 @@
     pop ZH
 .endmacro
 
+; sets XL to the value pointed to by @0 in dseg
+.macro load8X
+    push ZH
+    push ZL
+
+    loadZ @0
+    ld XL, Z
+
+    pop ZL
+    pop ZH
+.endmacro
+
 ; sets the value pointed to by @0 in dseg to X
 .macro store16X
     push ZH
@@ -29,6 +41,18 @@
     loadZ @0
     st Z+, XL
     st Z, XH
+
+    pop ZL
+    pop ZH
+.endmacro
+
+; sets the value pointed to by @0 in dseg to XL
+.macro store8X
+    push ZH
+    push ZL
+
+    loadZ @0
+    st Z, XL
 
     pop ZL
     pop ZH
@@ -46,9 +70,24 @@
     pop XH
 .endmacro
 
+; sets the value pointed to by @0 in dseg to @1
+.macro store8
+    push XL
+
+    ldi XL, @1
+    store8X @0
+
+    pop XL
+.endmacro
+
 ; clears value pointed to by @0
 .macro clear16
     store16 @0, 0
+.endmacro
+
+; clears value pointed to by @0
+.macro clear8
+    store8 @0, 0
 .endmacro
 
 ; compare X with @0
@@ -68,6 +107,26 @@
 .endmacro
 
 #define CODE(x) ((x) << 1)
+
+.macro lcdprint
+    ; jump over the string
+    rjmp SKIP
+
+    ; write string in memory
+    .set STR_ADDR = PC
+    .db @0, 0
+
+    ; print line to LCD
+SKIP:
+    push ZH
+    push ZL
+
+    loadZ CODE(STR_ADDR)
+    rcall lcd_puts
+
+    pop ZL
+    pop ZH
+.endmacro
 
 .macro dbgprint
     ; jump over the string

@@ -1,0 +1,9 @@
+STATE TO KEEP TRACK OF
+
+ * Direction (1: up, 0: down)
+ * Moving (1: moving, 0: stopped)
+ * Door open (1: open, 0: closed)
+ * Door opening/closing (1: opening/closing, 0: staying put)
+ * Emergency (1: emergency mode, 0: normal)
+
+variable called STATE
