@@ -133,8 +133,6 @@ leds_update_door_do:
     inc r18
 
 leds_update_door_write:
-    dbgprintln "door reg:"
-    DBGREG(r18)
     ; update counter in memory
     store8R LedCounter, r18
 
