@@ -16,6 +16,7 @@
 .equ KEY_STAR = 14
 .equ KEY_HASH = 15
 .equ KEY_LEN = 16
+.equ KEY_NONE = 255
 
 .def row = r16              ; current row number
 .def col = r17              ; current column number
@@ -30,9 +31,10 @@
 .equ ROWMASK = 0x0F         ; for obtaining input from Port L
 
 .dseg
-keypad_buf:
-    .byte KEY_LEN
-
+keypad_v:
+    .byte 1
+keypad_last_v:
+    .byte 1
 .cseg
 
 keypad_init:
@@ -45,7 +47,29 @@ keypad_init:
     out DDRC, r16
     out PORTC, r16
 
+    store8 keypad_v, KEY_NONE
+
     pop r16
+    ret
+
+keypad_is_released:
+    push XL
+
+    load8X keypad_last_v
+    cp XL, r16
+    brne keypad_is_released_false
+
+    load8X keypad_v
+    cp XL, r16
+    breq keypad_is_released_false
+
+    sez
+    rjmp keypad_is_released_end
+
+keypad_is_released_false:
+    clz
+keypad_is_released_end:
+    pop XL
     ret
 
 keypad_update:
@@ -55,6 +79,13 @@ keypad_update:
     push cmask
     push temp2
     push temp1
+    push XL
+
+    load8X keypad_v
+    store8X keypad_last_v
+    store8 keypad_v, KEY_NONE
+
+keypad_update_swap_loop_done:
 
     ldi cmask, INITCOLMASK      ; initial column mask
     clr col                     ; initial column
@@ -133,10 +164,13 @@ keypad_update_zero:
     ldi temp1, 0                ; set to zero
 
 keypad_update_convert_end:
-    dbgprintln "keypad press"
-    DBGREG(temp1)
+    ; dbgprintln "keypad press"
+    ; DBGREG(temp1)
+    mov XL, temp1
+    store8X keypad_v
 
 keypad_update_end:
+    pop XL
     pop temp1
     pop temp2
     pop cmask
