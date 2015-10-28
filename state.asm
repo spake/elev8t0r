@@ -5,6 +5,38 @@
 .equ STATE_DOOR_OPEN = 4
 .equ STATE_DOOR_CLOSING = 5
 
+.equ NUM_FLOORS = 10
+
+.dseg
+FloorRequest:
+    .byte 10
+.cseg
+
+state_init:
+    push r17
+    push r18
+    push XH
+    push XL
+
+    loadX FloorRequest
+
+    ldi r18, 0
+    ldi r17, NUM_FLOORS
+    loadX FloorRequest
+state_init_loop:
+    cpi r17, 0
+    breq state_init_end
+    st X+, r18
+    dec r17
+    rjmp state_init_loop
+
+state_init_end:
+    pop XL
+    pop XH
+    pop r18
+    pop r17
+    ret
+
 state_update_lcd:
     rcall lcd_clear_display
 
@@ -15,6 +47,42 @@ state_update_lcd:
 
     ret
 
+state_update_requests:
+    push r17
+    push ZL
+    push ZH
+
+    ldi r16, KEY_0
+    loadZ FloorRequest
+state_update_requests_key_loop:
+    rcall keypad_is_released
+    brne state_update_requests_key_loop_next
+
+    dbgprintln "got_request"
+    DBGREG(r16)
+
+    ldi r17, 1
+    st Z, r17
+
+state_update_requests_key_loop_next:
+    cpi r16, KEY_9
+    breq state_update_requests_end
+
+    adiw ZH:ZL, 1
+    inc r16
+    rjmp state_update_requests_key_loop
+
+
+state_update_requests_end:
+
+;    rcall floors_requested
+;    brne tt
+;    dbgprintln "floors_requested!!"
+;tt:
+    pop ZH
+    pop ZL
+    pop r17
+    ret
 
 state_update:
     cpi State, STATE_WAITING
@@ -40,43 +108,70 @@ emergency_halt:
     ret
 
 floors_requested:
-    ; TODO
+    push r17
+    push r18
+
+    ldi r17, NUM_FLOORS
+    loadX FloorRequest
+
+floors_requested_loop:
+    cpi r17, 0
+    breq floors_requested_false
+    ld r18, X+
+    dec r17
+    cpi r18, 1
+    brne floors_requested_loop
+
+    dbgprintln "requested yeah"
     sez
+    rjmp floors_requested_end
+
+floors_requested_false:
+    clz
+floors_requested_end:
+    pop r18
+    pop r17
     ret
 
-floors_requested_above:
+floors_above_requested:
     ; TODO
     clz
     ret
 
-floors_requested_below:
+floors_below_requested:
     ; TODO
     clz
     ret
 
 to_waiting:
+    dbgprintln "-> STATE_WAITING"
     ldi State, STATE_WAITING
     ret
 
 to_moving_down:
+    dbgprintln "-> STATE_MOVING_DOWN"
     ldi State, STATE_MOVING_DOWN
     ret
 
 to_moving_up:
+    dbgprintln "-> STATE_MOVING_UP"
     ldi State, STATE_MOVING_UP
     ret
 
 to_door_opening:
+    dbgprintln "-> STATE_DOOR_OPENING"
     ldi State, STATE_DOOR_OPENING
     clear16 DoorOpeningTimer
     ret
 
 to_door_open:
+    dbgprintln "-> STATE_DOOR_OPEN"
     ldi State, STATE_DOOR_OPEN
     clear16 DoorOpenTimer
     ret
 
 to_door_closing:
+    dbgprintln "-> STATE_DOOR_CLOSING"
     ldi State, STATE_DOOR_CLOSING
     clear16 DoorClosingTimer
     ret
@@ -84,25 +179,25 @@ to_door_closing:
 ; STATE_WAITING
 do_state_waiting:
     cpi Emergency, 1
-    breq to_moving_down
+    breq_long to_moving_down
     
-    rcall floors_requested_above
-    breq to_moving_up
+    rcall floors_above_requested
+    breq_long to_moving_up
     
-    rcall floors_requested_below
-    breq to_moving_down
+    rcall floors_below_requested
+    breq_long to_moving_down
 
     ret
 
 ; STATE_MOVING_UP
 do_state_moving_up:
     cpi Emergency, 1
-    breq to_moving_down
+    breq_long to_moving_down
 
     rcall floors_requested
     brne_long to_waiting
 
-    rcall floors_requested_above
+    rcall floors_above_requested
     brne_long to_moving_down
 
     ldi r16, 1
@@ -117,7 +212,7 @@ do_state_moving_down:
     rcall floors_requested
     brne_long to_waiting
 
-    rcall floors_requested_below
+    rcall floors_below_requested
     brne_long to_moving_down
 
 do_state_moving_down_move:

@@ -52,6 +52,7 @@ RESET:
     rcall strobe_init
     rcall motor_init
     rcall leds_init
+    rcall state_init
 
     ; enable interrupts
     sei
@@ -68,8 +69,9 @@ main:
 
 main_loop:
     rcall keypad_update
-    ;rcall state_update_lcd
     rcall leds_update
+    rcall state_update_lcd
+    rcall state_update_requests
     rcall state_update
     rcall sleep_5ms
 
