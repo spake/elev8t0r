@@ -135,10 +135,12 @@ state_update_lcd_down2:
 state_update_lcd_end:
     ; r16 and r17 already set at this point
     ldi r18, 0
+    ldi r19, 1
     rcall lcd_load_intermediary_bigchar
 
     inc r16
     ldi r18, 4
+    ldi r19, 2
     rcall lcd_load_intermediary_bigchar
 
     pop r19

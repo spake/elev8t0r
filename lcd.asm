@@ -70,6 +70,7 @@ lcd_set_line_2:
 
 ; input: Z, addr of bigchar in program memory
 ;        r16, offset for chars in CGRAM (should be 0 or 4)
+;        r17, border setting for bigchar (1 for left, 2 for right, 0 for none)
 lcd_load_bigchar:
     push r18
     push r19
@@ -100,6 +101,37 @@ lcd_load_bigchar_inner:
 
     lpm r16, Z+
 
+    cpi r17, 1
+    breq lcd_load_bigchar_inner_leftborder
+    cpi r17, 2
+    breq lcd_load_bigchar_inner_rightborder
+
+    rjmp lcd_load_bigchar_inner_draw
+
+lcd_load_bigchar_inner_leftborder:
+    cpi r18, 0
+    breq lcd_load_bigchar_inner_leftborder_tl
+    cpi r18, 2
+    breq lcd_load_bigchar_inner_leftborder_bl
+    rjmp lcd_load_bigchar_inner_draw
+
+lcd_load_bigchar_inner_leftborder_tl:
+lcd_load_bigchar_inner_leftborder_bl:
+    ori r16, 0b10000
+    rjmp lcd_load_bigchar_inner_draw
+
+lcd_load_bigchar_inner_rightborder:
+    cpi r18, 1
+    breq lcd_load_bigchar_inner_rightborder_tr
+    cpi r18, 3
+    breq lcd_load_bigchar_inner_rightborder_br
+    rjmp lcd_load_bigchar_inner_draw
+
+lcd_load_bigchar_inner_rightborder_tr:
+lcd_load_bigchar_inner_rightborder_br:
+    ori r16, 0b00001
+
+lcd_load_bigchar_inner_draw:
     rcall lcd_data
     rcall lcd_wait
 
@@ -119,13 +151,17 @@ lcd_load_bigchar_end:
 ; input: r16, digit to display
 ;        r17, how far through it should be (0-9, where 5 is centred)
 ;        r18, offset to pass to lcd_load_bigchar
+;        r19, border setting to pass to lcd_load_bigchar
 lcd_load_intermediary_bigchar:
     push r16
     push r17
     push r18
     push r19
+    push r20
     push ZL
     push ZH
+
+    mov r20, r19 ; save border setting in here
 
     loadZ CODE(Bigchar_Start)
 
@@ -164,10 +200,12 @@ lcd_load_intermediary_bigchar_loop2_end:
     ; finally, load bigchar
 
     mov r16, r18
+    mov r17, r20
     rcall lcd_load_bigchar
 
     pop ZL
     pop ZH
+    pop r20
     pop r19
     pop r18
     pop r17
