@@ -17,6 +17,7 @@ FloorTimer:
 .include "lcd.asm"
 .include "math.asm"
 .include "sleep.asm"
+.include "strobe.asm"
 .include "timer.asm"
 .include "uart.asm"
 .include "keypad.asm"
@@ -40,7 +41,8 @@ RESET:
     rcall lcd_init
     rcall timer_init
     rcall keypad_init
-    
+    rcall strobe_init
+
     ; enable interrupts
     sei
 

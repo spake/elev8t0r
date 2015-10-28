@@ -28,6 +28,10 @@ lcd_init:
     do_lcd_command 0b00000110 ; increment, no display shift
     do_lcd_command 0b00001100 ; Cursor OFF, bar, no blink
 
+    ; enable backlight
+    sbi DDRE, 3
+    sbi PORTE, 3
+
     ret
 
 ; write string to LCD
