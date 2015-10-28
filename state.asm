@@ -37,24 +37,75 @@ state_init_end:
     pop r17
     ret
 
+; get progress of moving between floors, put into reg @0
+; will be value between 0 and 9 inclusive
+.macro get_move_progress
+    load16X MoveTimer
+    mov @0, XH ; in the range 0 to 9
+    cpi @0, 10
+    brlt get_move_progress_end
+
+    ; constrain to 0 to 9
+    ldi @0, 9
+
+get_move_progress_end:
+.endmacro
+
 state_update_lcd:
     push r16
     push r17
     push r18
+    push r19
 
-    ;rcall lcd_clear_display
+    mov r16, Floor  ; DIGIT
+    ldi r17, 5      ; PROGRESS (0 to 9)
 
-    mov r16, Floor
-    ldi r17, 5
+    cpi State, STATE_MOVING_UP
+    breq state_update_lcd_up
+    cpi State, STATE_MOVING_DOWN
+    breq state_update_lcd_down
+
+    rjmp state_update_lcd_end
+
+state_update_lcd_up:
+    get_move_progress r19
+    cpi r19, 5
+    brge state_update_lcd_up2
+state_update_lcd_up1:
+    ; 0 <= r19 <= 4
+    mov r17, r19
+    inc r17
+    inc r17
+    inc r17
+    inc r17
+    inc r17
+    inc r17
+    ; 5 <= r17 <= 9
+    rjmp state_update_lcd_end
+state_update_lcd_up2:
+    ; 5 <= r19 <= 9
+    mov r17, r19
+    dec r17
+    dec r17
+    dec r17
+    dec r17
+    ; 1 <= r17 <= 5
+    inc r16
+    rjmp state_update_lcd_end
+
+state_update_lcd_down:
+    ; TODO: this
+
+state_update_lcd_end:
+    ; r16 and r17 already set at this point
     ldi r18, 0
     rcall lcd_load_intermediary_bigchar
 
-    mov r16, Floor
     inc r16
-    ldi r17, 5
     ldi r18, 4
     rcall lcd_load_intermediary_bigchar
 
+    pop r19
     pop r18
     pop r17
     pop r16
@@ -173,7 +224,7 @@ clear_current_floor_request:
     ret
 
 run_move:
-    cpi16 MoveTimer, 2000
+    cpi16 MoveTimer, 2560
     brlt run_move_end
 
     add Floor, r16

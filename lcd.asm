@@ -120,9 +120,12 @@ lcd_load_bigchar_end:
 ;        r17, how far through it should be (0-9, where 5 is centred)
 ;        r18, offset to pass to lcd_load_bigchar
 lcd_load_intermediary_bigchar:
-    push ZH
-    push ZL
+    push r16
+    push r17
+    push r18
     push r19
+    push ZL
+    push ZH
 
     loadZ CODE(Bigchar_Start)
 
@@ -163,9 +166,12 @@ lcd_load_intermediary_bigchar_loop2_end:
     mov r16, r18
     rcall lcd_load_bigchar
 
-    pop r19
     pop ZL
     pop ZH
+    pop r19
+    pop r18
+    pop r17
+    pop r16
     ret
 
 ; draws an 8-bit number to the screen in decimal
