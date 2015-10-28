@@ -72,10 +72,13 @@ SKIP:
     rcall uart_newline
 .endmacro
 
-#define DBGREG(reg) \
-    dbgprint #reg ": " \
-    push r16 \
-    mov r16, reg \
-    rcall uart_print_number \
-    rcall uart_newline \
+.macro dbgreg_
+    dbgprint @0
+    push r16
+    mov r16, @1
+    rcall uart_print_number
+    rcall uart_newline
     pop r16
+.endmacro
+
+#define DBGREG(reg) dbgreg_ #reg ": ", reg
