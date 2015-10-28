@@ -9,7 +9,7 @@
     rcall lcd_wait
 .endmacro
 
-setup_lcd:
+lcd_init:
     ser r16
     out DDRF, r16
     out DDRA, r16

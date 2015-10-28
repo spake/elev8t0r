@@ -8,7 +8,7 @@ Msec1:
 .org 0
     jmp RESET
 .org OC0Aaddr
-    jmp timer0OC
+    jmp timer0_handler
     jmp RESET
 
 .include "macros.asm"
@@ -31,8 +31,8 @@ RESET:
     dbgprintln "Starting up"
 
     ; set up other things
-    rcall setup_lcd
-    rcall setup_timer
+    rcall lcd_init
+    rcall timer_init
     
     ; enable interrupts
     sei

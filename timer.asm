@@ -1,4 +1,4 @@
-setup_timer:
+timer_init:
     push r16
 
     ldi r16, 0
@@ -18,7 +18,7 @@ setup_timer:
     pop r16
     ret
 
-timer0OC:
+timer0_handler:
     ; save regs
     push r16
 
