@@ -64,11 +64,13 @@ state_update_requests_key_loop:
     ldi r17, 1
     st Z, r17
 
+    rcall dbg_floors_requested
+
 state_update_requests_key_loop_next:
     cpi r16, KEY_9
     breq state_update_requests_end
 
-    adiw ZH:ZL, 1
+    adiw Z, 1
     inc r16
     rjmp state_update_requests_key_loop
 
@@ -99,6 +101,23 @@ state_update:
     breq_long do_state_door_closing
     ret
 
+is_floor_requested:
+    push r17
+    push XH
+    push XL
+
+    loadX FloorRequest
+    ldi r17, 0
+    add XL, r16
+    adc XH, r17
+
+    ld r16, X
+    cpi r16, 1
+
+    pop XL
+    pop XH
+    pop r17
+    ret
 
 run_move:
     cpi16 MoveTimer, 2000
@@ -106,6 +125,16 @@ run_move:
 
     add Floor, r16
 
+    DBGREG(Floor)
+
+    mov r16, Floor
+    rcall is_floor_requested
+    breq run_move_stop
+
+    clear16 MoveTimer
+    rjmp run_move_end 
+
+run_move_stop:
     rcall to_door_opening
 
 run_move_end:
@@ -115,7 +144,7 @@ emergency_halt:
     ; TODO
     ret
 
-; r16 = start floor
+; r16 = start floor  [start, end)
 ; r17 = end floor
 floors_range_requested:
     push r18
@@ -126,6 +155,10 @@ floors_range_requested:
     mov r18, r16
     loadX FloorRequest
 
+    ldi r19, 0
+    add XL, r16
+    adc XH, r19
+
 floors_range_requested_loop:
     cp r18, r17
     breq floors_range_requested_false
@@ -135,6 +168,10 @@ floors_range_requested_loop:
 
     cpi r19, 1
     brne floors_range_requested_loop
+
+    ; dbgprintln "floors_range with:"
+    ; DBGREG(r18)
+    ; DBGREG(r19)
 
     sez
     rjmp floors_range_requested_end
@@ -149,6 +186,40 @@ floors_range_requested_end:
     ret
 
 
+dbg_floors_requested:
+    push r18
+    push r19
+    push XH
+    push XL
+
+    ldi r18, 0
+    loadX FloorRequest
+
+dbg_floors_requested_loop:
+    cpi r18, 10
+    breq dbg_floors_requested_end
+
+    ld r19, X+
+    inc r18
+
+    cpi r19, 1
+    brne dbg_floors_requested_no
+
+    dbgprint "X"
+    rjmp dbg_floors_requested_loop
+
+dbg_floors_requested_no:
+    dbgprint "."
+    rjmp dbg_floors_requested_loop
+
+dbg_floors_requested_end:
+    dbgprintln " "
+    pop XL
+    pop XH
+    pop r19
+    pop r18
+    ret
+
 
 floors_requested:
     push r17
@@ -160,8 +231,12 @@ floors_requested:
 
 floors_above_requested:
     push r17
+    ; dbgprintln "floors_above_requested"
     mov r16, Floor
     ldi r17, NUM_FLOORS
+    ; DBGREG(r16)
+    ; DBGREG(r17)
+    ; rcall dbg_floors_requested
     rcall floors_range_requested
     pop r17
     ret
@@ -192,9 +267,27 @@ to_moving_up:
     ret
 
 to_door_opening:
+    push r17
+    push XH
+    push XL
+
     dbgprintln "-> STATE_DOOR_OPENING"
+    
+    ; clear the current floors request
+    loadX FloorRequest
+    ldi r17, 0
+    add XL, Floor
+    adc XH, r17
+    st X, r17
+
+    rcall dbg_floors_requested
+
     ldi State, STATE_DOOR_OPENING
     clear16 DoorOpeningTimer
+
+    pop XL
+    pop XH
+    pop r17
     ret
 
 to_door_open:
@@ -246,7 +339,7 @@ do_state_moving_down:
     brne_long to_waiting
 
     rcall floors_below_requested
-    brne_long to_moving_down
+    brne_long to_moving_up
 
 do_state_moving_down_move:
     ldi r16, -1
