@@ -43,11 +43,18 @@ state_init_end:
 ; will be value between 0 and 9 inclusive
 .macro get_move_progress
     load16X MoveTimer
-    mov @0, XH ; in the range 0 to 9
+    ;mov @0, XH ; in the range 0 to 9
+    mov ZL, XL
+    mov ZH, XH
+    ldi YL, 200
+    ldi YH, 0
+    rcall divide16
+    mov @0, ZL
+
     cpi @0, 10
     brlt get_move_progress_end
 
-    ; constrain to 0 to 9
+    ; constrain to range 0 to 9
     ldi @0, 9
 
 get_move_progress_end:
@@ -76,27 +83,38 @@ state_update_lcd_up:
 state_update_lcd_up1:
     ; 0 <= r19 <= 4
     mov r17, r19
-    inc r17
-    inc r17
-    inc r17
-    inc r17
-    inc r17
-    inc r17
+    subi r17, 250 ; r17 += 6
     ; 5 <= r17 <= 9
     rjmp state_update_lcd_end
 state_update_lcd_up2:
     ; 5 <= r19 <= 9
     mov r17, r19
-    dec r17
-    dec r17
-    dec r17
-    dec r17
+    subi r17, 4
     ; 1 <= r17 <= 5
     inc r16
     rjmp state_update_lcd_end
 
 state_update_lcd_down:
-    ; TODO: this
+    get_move_progress r19
+    cpi r19, 5
+    brge state_update_lcd_down2
+state_update_lcd_down1:
+    ; 0 <= r19 <= 4
+    ; want r17 := 4 - r19
+    mov r17, r19
+    com r17
+    subi r17, 251 ; r17 += 5
+    ; 0 <= r17 <= 4
+    rjmp state_update_lcd_end
+state_update_lcd_down2:
+    ; 5 <= r19 <= 9
+    ; want r17 := 9 - (r17 - 5)
+    mov r17, r19
+    subi r17, 5
+    com r17
+    subi r17, 246 ; r17 += 10
+    ; 5 <= r17 <= 9
+    dec r16
 
 state_update_lcd_end:
     ; r16 and r17 already set at this point
@@ -230,7 +248,7 @@ clear_current_floor_request:
     ret
 
 run_move:
-    cpi16 MoveTimer, 2560
+    cpi16 MoveTimer, 2000
     brlt run_move_end
 
     add Floor, r16

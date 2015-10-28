@@ -23,7 +23,6 @@ StrobeTimer:
 
 .include "font.asm"
 .include "macros.asm"
-.include "leds.asm"
 .include "lcd.asm"
 .include "math.asm"
 .include "motor.asm"
@@ -33,6 +32,7 @@ StrobeTimer:
 .include "uart.asm"
 .include "keypad.asm"
 .include "pushbutton.asm"
+.include "leds.asm"
 
 .def State = r19
 .def Floor = r20
