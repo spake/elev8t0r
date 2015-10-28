@@ -251,6 +251,9 @@ floors_below_requested:
 
 to_waiting:
     dbgprintln "-> STATE_WAITING"
+
+    motor_off
+
     ldi State, STATE_WAITING
     ret
 
@@ -272,6 +275,8 @@ to_door_opening:
     push XL
 
     dbgprintln "-> STATE_DOOR_OPENING"
+
+    motor_on
     
     ; clear the current floors request
     loadX FloorRequest
@@ -292,12 +297,18 @@ to_door_opening:
 
 to_door_open:
     dbgprintln "-> STATE_DOOR_OPEN"
+    
+    motor_off
+
     ldi State, STATE_DOOR_OPEN
     clear16 DoorOpenTimer
     ret
 
 to_door_closing:
     dbgprintln "-> STATE_DOOR_CLOSING"
+
+    motor_on
+
     ldi State, STATE_DOOR_CLOSING
     clear16 DoorClosingTimer
     ret
