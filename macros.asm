@@ -47,7 +47,7 @@
 
 #define CODE(x) ((x) << 1)
 
-.macro debugstr
+.macro dbgprint
     ; jump over the string
     rjmp SKIP
 
@@ -61,8 +61,21 @@ SKIP:
     push ZL
 
     loadZ CODE(STR_ADDR)
-    rcall uart_println
+    rcall uart_puts
 
     pop ZL
     pop ZH
 .endmacro
+
+.macro dbgprintln
+    dbgprint @0
+    rcall uart_newline
+.endmacro
+
+#define DBGREG(reg) \
+    dbgprint #reg ": " \
+    push r16 \
+    mov r16, reg \
+    rcall uart_print_number \
+    rcall uart_newline \
+    pop r16

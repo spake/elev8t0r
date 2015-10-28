@@ -27,7 +27,7 @@ RESET:
 
     ; initialise uart for debugging
     rcall uart_init
-    debugstr "Starting up"
+    dbgprintln "Starting up"
 
     ; set up other things
     rcall setup_lcd
@@ -45,7 +45,7 @@ RESET:
     loadZ CODE(welcome_str_2)
     rcall lcd_puts
 
-    debugstr "Waiting for Msec1 to be non-zero"
+    dbgprintln "Waiting for Msec1 to be non-zero"
 loop:
     load16X Msec1
 
@@ -54,7 +54,7 @@ loop:
 
     rjmp loop
 loop_print:
-    debugstr "ping"
+    dbgprintln "ping"
 
     store16X Msec1, 0
 
