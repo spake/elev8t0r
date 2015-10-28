@@ -25,7 +25,6 @@ StrobeTimer:
 .include "macros.asm"
 .include "math.asm"
 .include "motor.asm"
-.include "sleep.asm"
 .include "strobe.asm"
 .include "timer.asm"
 .include "uart.asm"
@@ -33,6 +32,7 @@ StrobeTimer:
 .include "pushbutton.asm"
 .include "leds.asm"
 .include "lcd.asm"
+.include "sleep.asm"
 
 .def State = r19
 .def Floor = r20
@@ -61,8 +61,6 @@ RESET:
     rcall pushbutton_init
     rcall state_init
 
-    rcall state_fix_lcd
-
     ; enable interrupts
     sei
 
@@ -71,7 +69,27 @@ main:
     ldi Floor, 0
     ldi Emergency, 0
 
+    ; print welcome messages, hijack timer
+    lcd_set_pos 0, 0
+    lcdprint "    elev8t0r     "
 
+welcome_loop1:
+    cpi16 MoveTimer, 1000
+    brlt welcome_loop1
+
+    clear16 MoveTimer
+
+    lcd_set_pos 1, 0
+    lcdprint "   by Group F6   "
+
+welcome_loop2:
+    cpi16 MoveTimer, 1000
+    brlt welcome_loop2
+
+    clear16 MoveTimer
+
+    ; set up LCD properly
+    rcall state_fix_lcd
     dbgprintln "Entering state loop"
 
 main_loop:
@@ -85,6 +103,3 @@ main_loop:
 
 main_loop_end:
     rjmp main_loop
-
-welcome_str_1: .db "    elev8t0r    ", 0
-welcome_str_2: .db "   by Group F6  ", 0
