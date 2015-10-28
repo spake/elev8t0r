@@ -8,7 +8,7 @@ Msec1:
 .org 0
     jmp RESET
 .org OC0Aaddr
-    jmp timer0OC
+    jmp timer0_handler
     jmp RESET
 
 .include "macros.asm"
