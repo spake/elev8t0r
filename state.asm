@@ -497,7 +497,7 @@ do_state_waiting:
 
     ; "If the Open button is pushed while the lift is stopped at a floor,
     ;  it should open"
-    rcall pushbutton_1_released
+    rcall pushbutton_1_pressed
     breq_long to_door_opening
 
     rcall floors_above_requested
@@ -599,7 +599,7 @@ do_state_door_open_wait:
 do_state_door_closing:
     ; "If the Open button is pushed while the lift is closing,
     ; the door should stop-closing"
-    rcall pushbutton_1_released
+    rcall pushbutton_1_pressed
     breq_long to_door_opening
 
     ; closing the door takes 1 second
