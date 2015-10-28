@@ -198,3 +198,21 @@ SKIP:
 .endmacro
 
 #define DBGREG(reg) dbgreg_ #reg ": ", reg
+
+.macro breq_long
+    brne SKIP
+    rjmp @0
+SKIP:
+.endmacro
+
+.macro brne_long
+    breq SKIP
+    rjmp @0
+SKIP:
+.endmacro
+
+.macro brge_long
+    brlt SKIP
+    rjmp @0
+SKIP:
+.endmacro

@@ -23,8 +23,10 @@ FloorTimer:
 .include "uart.asm"
 .include "keypad.asm"
 
-.def State = r20
-.def CurrentFloor = r21
+.def State = r19
+.def Floor = r20
+.def Emergency = r21
+
 .include "state.asm"
 
 RESET:
@@ -49,11 +51,9 @@ RESET:
     sei
 
 main:
-    ; initialise state
     ldi State, 0
-
-    ; initialise current floor
-    ldi CurrentFloor, 0
+    ldi Floor, 0
+    ldi Emergency, 0
 
     ; do initial LCD update
     rcall update_lcd
@@ -62,29 +62,6 @@ main:
 
 main_loop:
     rcall keypad_update
-
-    ldi r16, KEY_0
-    rcall keypad_is_released
-
-    ; check if moving
-    sbrs State, STATE_MOVING
-    rjmp main_loop_moving_done
-main_loop_moving:
-    ; check if 2 seconds has elapsed
-    cpi16 FloorTimer, 2000
-    brlt main_loop
-
-    ; reset floor timer
-    clear16 FloorTimer
-
-    ; time to move
-    inc CurrentFloor
-
-    ; set not moving any more
-    cbr State, (1 << STATE_MOVING)
-
-    rcall update_lcd
-main_loop_moving_done:
 
 main_loop_end:
     rjmp main_loop
