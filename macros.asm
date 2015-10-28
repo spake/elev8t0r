@@ -33,6 +33,30 @@
     pop ZH
 .endmacro
 
+; sets register @0 to the value pointed to by @1 in dseg
+.macro load8R
+    push ZH
+    push ZL
+
+    loadZ @1
+    ld @0, Z
+
+    pop ZL
+    pop ZH
+.endmacro
+
+; sets the value pointed to by @1 in dseg to register @0
+.macro store8R
+    push ZH
+    push ZL
+
+    loadZ @0
+    st Z, @1
+
+    pop ZL
+    pop ZH
+.endmacro
+
 ; sets the value pointed to by @0 in dseg to X
 .macro store16X
     push ZH
@@ -213,6 +237,12 @@ SKIP:
 
 .macro brge_long
     brlt SKIP
+    rjmp @0
+SKIP:
+.endmacro
+
+.macro brlt_long
+    brge SKIP
     rjmp @0
 SKIP:
 .endmacro

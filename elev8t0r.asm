@@ -7,6 +7,8 @@ DoorOpenTimer:
     .byte 2
 DoorClosingTimer:
     .byte 2
+LedsTimer:
+    .byte 2
 
 .cseg
 .org 0
@@ -16,6 +18,7 @@ DoorClosingTimer:
     jmp RESET
 
 .include "macros.asm"
+.include "leds.asm"
 .include "lcd.asm"
 .include "math.asm"
 .include "motor.asm"
@@ -48,6 +51,7 @@ RESET:
     rcall keypad_init
     rcall strobe_init
     rcall motor_init
+    rcall leds_init
 
     ; enable interrupts
     sei
@@ -60,9 +64,12 @@ main:
 
     dbgprintln "Entering state loop"
 
+    store8 LedState, LED_STATE_DOWN
+
 main_loop:
     rcall keypad_update
-    rcall state_update_lcd
+    ;rcall state_update_lcd
+    rcall leds_update
     rcall state_update
     rcall sleep_5ms
 

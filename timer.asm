@@ -26,13 +26,9 @@ timer0_handler:
     in r16, SREG
     push r16
 
-    load16X Msec1
+    load16X LedsTimer
     adiw X, 1
-    store16X Msec1
-
-    load16X FloorTimer
-    adiw X, 1
-    store16X FloorTimer
+    store16X LedsTimer
 
     ; restore SREG
     pop r16
