@@ -19,6 +19,7 @@ LedsTimer:
     jmp timer0_handler
     jmp RESET
 
+.include "font.asm"
 .include "macros.asm"
 .include "leds.asm"
 .include "lcd.asm"
@@ -58,6 +59,18 @@ RESET:
 
     ; enable interrupts
     sei
+
+    lcd_set_pos 0, 6
+    do_lcd_data 0
+    do_lcd_data 1
+    do_lcd_data 4
+    do_lcd_data 5
+
+    lcd_set_pos 1, 6
+    do_lcd_data 2
+    do_lcd_data 3
+    do_lcd_data 6
+    do_lcd_data 7
 
 main:
     ldi State, STATE_WAITING

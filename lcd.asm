@@ -55,8 +55,117 @@ lcd_clear_display:
     do_lcd_command 0b00000001
     ret
 
+lcd_set_line_1:
+    do_lcd_command 0b10000000 ; move cursor to 1st line
+    ret
+
 lcd_set_line_2:
 	do_lcd_command 0b11000000 ; move cursor to 2nd line
+    ret
+
+; sets it to line @0, col @1
+.macro lcd_set_pos
+    do_lcd_command (0b10000000 | (@0 * 0x40) | (@1 & 0x3F))
+.endmacro
+
+; input: Z, addr of bigchar in program memory
+;        r16, offset for chars in CGRAM (should be 0 or 4)
+lcd_load_bigchar:
+    push r18
+    push r19
+    push r20
+
+    mov r20, r16 ; save offset
+
+    ldi r18, 0 ; count the 4 bigchar segments
+lcd_load_bigchar_outer:
+    cpi r18, 4
+    breq lcd_load_bigchar_end
+
+    ; r16 := 0x40 | ((r18 + r20) << 3)
+    mov r16, r18
+    add r16, r20 ; add offset
+    lsl r16
+    lsl r16
+    lsl r16
+    ori r16, 0x40
+
+    rcall lcd_command
+    rcall lcd_wait
+
+    ldi r19, 0 ; count the 8 parts of each normal char
+lcd_load_bigchar_inner:
+    cpi r19, 8
+    breq lcd_load_bigchar_inner_end
+
+    lpm r16, Z+
+
+    rcall lcd_data
+    rcall lcd_wait
+
+    inc r19
+    rjmp lcd_load_bigchar_inner
+
+lcd_load_bigchar_inner_end:
+    inc r18
+    rjmp lcd_load_bigchar_outer
+
+lcd_load_bigchar_end:
+    pop r20
+    pop r19
+    pop r18
+    ret
+
+; input: r16, digit to display
+;        r17, how far through it should be (0-9, where 5 is centred)
+;        r18, offset to pass to lcd_load_bigchar
+lcd_load_intermediary_bigchar:
+    push ZH
+    push ZL
+    push r19
+
+    loadZ CODE(Bigchar_Start)
+
+    ; each bigchar is 32 bytes
+    ; 10 intermediary states each: 0 for completely visible, 9 for one col remaining
+    ; so each set of intermediary states for a digit takes up 320 bytes
+
+    ldi r19, 0
+
+    ; Z += 320*r16
+lcd_load_intermediary_bigchar_loop1:
+    cp r19, r16
+    breq lcd_load_intermediary_bigchar_loop1_end
+
+    inc ZH      ; Z += 256
+    adiw Z, 32  ; Z += 32
+    adiw Z, 32  ; Z += 32
+
+    inc r19
+    rjmp lcd_load_intermediary_bigchar_loop1
+lcd_load_intermediary_bigchar_loop1_end:
+
+    ldi r19, 0
+
+    ; Z += 32*r17
+lcd_load_intermediary_bigchar_loop2:
+    cp r19, r17
+    breq lcd_load_intermediary_bigchar_loop2_end
+
+    adiw Z, 32
+
+    inc r19
+    rjmp lcd_load_intermediary_bigchar_loop2
+lcd_load_intermediary_bigchar_loop2_end:
+
+    ; finally, load bigchar
+
+    mov r16, r18
+    rcall lcd_load_bigchar
+
+    pop r19
+    pop ZL
+    pop ZH
     ret
 
 ; draws an 8-bit number to the screen in decimal
@@ -119,21 +228,21 @@ lcd_draw_number_finish:
 
 lcd_command:
     out PORTF, r16
-    rcall sleep_1ms
+    rcall sleep_100us
     lcd_set LCD_E
-    rcall sleep_1ms
+    rcall sleep_100us
     lcd_clr LCD_E
-    rcall sleep_1ms
+    rcall sleep_100us
     ret
 
 lcd_data:
     out PORTF, r16
     lcd_set LCD_RS
-    rcall sleep_1ms
+    rcall sleep_100us
     lcd_set LCD_E
-    rcall sleep_1ms
+    rcall sleep_100us
     lcd_clr LCD_E
-    rcall sleep_1ms
+    rcall sleep_100us
     lcd_clr LCD_RS
     ret
 
@@ -144,9 +253,9 @@ lcd_wait:
     out PORTF, r16
     lcd_set LCD_RW
 lcd_wait_loop:
-    rcall sleep_1ms
+    rcall sleep_100us
     lcd_set LCD_E
-    rcall sleep_1ms
+    rcall sleep_100us
     in r16, PINF
     lcd_clr LCD_E
     sbrc r16, 7

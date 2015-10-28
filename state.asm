@@ -38,13 +38,26 @@ state_init_end:
     ret
 
 state_update_lcd:
-    rcall lcd_clear_display
+    push r16
+    push r17
+    push r18
 
-    lcdprint "Floor: "
+    ;rcall lcd_clear_display
 
     mov r16, Floor
-    rcall lcd_draw_number
+    ldi r17, 5
+    ldi r18, 0
+    rcall lcd_load_intermediary_bigchar
 
+    mov r16, Floor
+    inc r16
+    ldi r17, 5
+    ldi r18, 4
+    rcall lcd_load_intermediary_bigchar
+
+    pop r18
+    pop r17
+    pop r16
     ret
 
 state_update_requests:
