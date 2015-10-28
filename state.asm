@@ -107,40 +107,63 @@ emergency_halt:
     ; TODO
     ret
 
-floors_requested:
-    push r17
+; r16 = start floor
+; r17 = end floor
+floors_range_requested:
     push r18
+    push r19
+    push XH
+    push XL
 
-    ldi r17, NUM_FLOORS
+    mov r18, r16
     loadX FloorRequest
 
-floors_requested_loop:
-    cpi r17, 0
-    breq floors_requested_false
-    ld r18, X+
-    dec r17
-    cpi r18, 1
-    brne floors_requested_loop
+floors_range_requested_loop:
+    cp r18, r17
+    breq floors_range_requested_false
 
-    dbgprintln "requested yeah"
+    ld r19, X+
+    inc r18
+
+    cpi r19, 1
+    brne floors_range_requested_loop
+
     sez
-    rjmp floors_requested_end
+    rjmp floors_range_requested_end
 
-floors_requested_false:
+floors_range_requested_false:
     clz
-floors_requested_end:
+floors_range_requested_end:
+    pop XL
+    pop XH
+    pop r19
     pop r18
+    ret
+
+
+
+floors_requested:
+    push r17
+    ldi r16, 0
+    ldi r17, NUM_FLOORS
+    rcall floors_range_requested
     pop r17
     ret
 
 floors_above_requested:
-    ; TODO
-    clz
+    push r17
+    mov r16, Floor
+    ldi r17, NUM_FLOORS
+    rcall floors_range_requested
+    pop r17
     ret
 
 floors_below_requested:
-    ; TODO
-    clz
+    push r17
+    ldi r16, 0
+    mov r17, Floor
+    rcall floors_range_requested
+    pop r17
     ret
 
 to_waiting:
