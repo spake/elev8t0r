@@ -8,7 +8,7 @@
     ldi XL, LOW(@0)
 .endmacro
 
-; sets X to the value pointed to by Z in dseg
+; sets X to the value pointed to by @0 in dseg
 .macro load16X
     push ZH
     push ZL
@@ -21,7 +21,7 @@
     pop ZH
 .endmacro
 
-; sets the value pointed to by Z in dseg to X
+; sets the value pointed to by @0 in dseg to X
 .macro store16X
     push ZH
     push ZL
@@ -34,6 +34,7 @@
     pop ZH
 .endmacro
 
+; sets the value pointed to by @0 in dseg to @1
 .macro store16
     push XH
     push XL
@@ -43,6 +44,27 @@
 
     pop XL
     pop XH
+.endmacro
+
+; clears value pointed to by @0
+.macro clear16
+    store16 @0, 0
+.endmacro
+
+; compare X with @0
+.macro cpi16X
+    push YH
+    push YL
+
+    ldi YH, HIGH(@0)
+    ldi YL, LOW(@0)
+
+    ; do comparison
+    cp XL, YL
+    cpc XH, YH
+
+    pop YL
+    pop YH
 .endmacro
 
 #define CODE(x) ((x) << 1)

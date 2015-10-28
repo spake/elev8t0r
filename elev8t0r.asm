@@ -45,20 +45,16 @@ RESET:
     loadZ CODE(welcome_str_2)
     rcall lcd_puts
 
-    debugstr "Waiting for Msec1 to be non-zero"
-loop:
+    debugstr "Going into ping loop"
+wait_loop:
     load16X Msec1
+    cpi16X 1000
+    brlt wait_loop
 
-    cpi XH, 4
-    brge loop_print
-
-    rjmp loop
-loop_print:
+wait_ping:
     debugstr "ping"
-
-    store16X Msec1, 0
-
-    rjmp loop
+    clear16 Msec1
+    rjmp wait_loop
 
 halt:
     rjmp halt
