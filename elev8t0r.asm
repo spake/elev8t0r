@@ -31,6 +31,7 @@ StrobeTimer:
 .include "timer.asm"
 .include "uart.asm"
 .include "keypad.asm"
+.include "pushbutton.asm"
 
 .def State = r19
 .def Floor = r20
@@ -56,6 +57,7 @@ RESET:
     rcall strobe_init
     rcall motor_init
     rcall leds_init
+    rcall pushbutton_init
     rcall state_init
 
     ; enable interrupts
@@ -72,6 +74,7 @@ main:
 main_loop:
     rcall keypad_update
     rcall leds_update
+    rcall pushbutton_update
     rcall state_update_lcd
     rcall state_update_requests
     rcall state_update
