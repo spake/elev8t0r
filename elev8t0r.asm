@@ -1,9 +1,11 @@
 .include "m2560def.inc"
 
 .dseg
-Msec1:
+DoorOpeningTimer:
     .byte 2
-FloorTimer:
+DoorOpenTimer:
+    .byte 2
+DoorClosingTimer:
     .byte 2
 
 .cseg
@@ -51,17 +53,18 @@ RESET:
     sei
 
 main:
-    ldi State, 0
+    ldi State, STATE_WAITING
     ldi Floor, 0
     ldi Emergency, 0
 
-    ; do initial LCD update
-    rcall update_lcd
 
     dbgprintln "Entering state loop"
 
 main_loop:
     rcall keypad_update
+    rcall state_update_lcd
+    rcall state_update
+    rcall sleep_5ms
 
 main_loop_end:
     rjmp main_loop

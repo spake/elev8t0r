@@ -5,7 +5,7 @@
 .equ STATE_DOOR_OPEN = 4
 .equ STATE_DOOR_CLOSING = 5
 
-update_lcd:
+state_update_lcd:
     rcall lcd_clear_display
 
     lcdprint "Floor: "
