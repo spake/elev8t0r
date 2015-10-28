@@ -97,6 +97,7 @@ state_update:
     breq_long do_state_door_open
     cpi State, STATE_DOOR_CLOSING
     breq_long do_state_door_closing
+    ret
 
 
 run_move:
