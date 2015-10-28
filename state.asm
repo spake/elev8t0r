@@ -52,24 +52,33 @@ state_update_requests:
     push ZL
     push ZH
 
-    ldi r16, KEY_2
-    rcall keypad_is_released
-    brne state_update_requests_end
-
-    dbgprintln "released yeah"
-    
+    ldi r16, KEY_0
     loadZ FloorRequest
-    adiw ZH:ZL, 2
+state_update_requests_key_loop:
+    rcall keypad_is_released
+    brne state_update_requests_key_loop_next
+
+    dbgprintln "got_request"
+    DBGREG(r16)
+
     ldi r17, 1
     st Z, r17
 
+state_update_requests_key_loop_next:
+    cpi r16, KEY_9
+    breq state_update_requests_end
+
+    adiw ZH:ZL, 1
+    inc r16
+    rjmp state_update_requests_key_loop
+
+
 state_update_requests_end:
 
-    rcall floors_requested
-    brne tt
-    dbgprintln "floors_requested!!"
-
-tt:
+;    rcall floors_requested
+;    brne tt
+;    dbgprintln "floors_requested!!"
+;tt:
     pop ZH
     pop ZL
     pop r17
