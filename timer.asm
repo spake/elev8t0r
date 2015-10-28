@@ -26,6 +26,10 @@ timer0_handler:
     in r16, SREG
     push r16
 
+    inc16 DoorOpeningTimer
+    inc16 DoorOpenTimer
+    inc16 DoorClosingTimer
+    inc16 MoveTimer
     inc16 LedsTimer
 
     ; restore SREG

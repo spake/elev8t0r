@@ -7,6 +7,8 @@ DoorOpenTimer:
     .byte 2
 DoorClosingTimer:
     .byte 2
+MoveTimer:
+    .byte 2
 LedsTimer:
     .byte 2
 
