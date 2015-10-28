@@ -67,8 +67,6 @@ main:
 
     dbgprintln "Entering state loop"
 
-    store8 LedState, LED_STATE_DOWN
-
 main_loop:
     rcall keypad_update
     rcall leds_update

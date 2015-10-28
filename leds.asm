@@ -1,6 +1,4 @@
 .dseg
-LedState:
-    .byte 1
 LedPrevState:
     .byte 1
 LedCounter:
@@ -34,10 +32,37 @@ leds_update:
 
     clear16 LedsTimer ; reset timer
 
-    ; r16 holds LedState value
-    load8R r16, LedState
     load8R r17, LedPrevState
 
+    cpi State, STATE_MOVING_UP
+    breq leds_update_state_moving_up
+    cpi State, STATE_MOVING_DOWN
+    breq leds_update_state_moving_down
+    cpi State, STATE_DOOR_OPENING
+    breq leds_update_state_door_open
+    cpi State, STATE_DOOR_OPEN
+    breq leds_update_state_door_open
+    cpi State, STATE_DOOR_CLOSING
+    breq leds_update_state_door_close
+    cpi State, STATE_WAITING
+    breq leds_update_state_door_open
+
+    ; bad state
+    rjmp leds_update_done
+
+leds_update_state_moving_up:
+    ldi r16, LED_STATE_UP
+    rjmp leds_update_state_check
+leds_update_state_moving_down:
+    ldi r16, LED_STATE_DOWN
+    rjmp leds_update_state_check
+leds_update_state_door_open:
+    ldi r16, LED_STATE_OPEN
+    rjmp leds_update_state_check
+leds_update_state_door_close:
+    ldi r16, LED_STATE_CLOSE
+
+leds_update_state_check:
     cpi r16, LED_STATE_UP
     breq leds_update_moving
     cpi r16, LED_STATE_DOWN
@@ -46,9 +71,6 @@ leds_update:
     breq leds_update_door
     cpi r16, LED_STATE_CLOSE
     breq leds_update_door
-
-    ; bad state
-    rjmp leds_update_done
 
 leds_update_moving:
     cp r16, r17
