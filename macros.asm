@@ -106,6 +106,17 @@
     pop YH
 .endmacro
 
+.macro cpi16
+    push XH
+    push XL
+
+    load16X @0
+    cpi16X @1
+
+    pop XL
+    pop XH
+.endmacro
+
 ; loads @1th value of array pointed to by @0 into XL
 .macro arrayLoadX
     push ZH
