@@ -30,8 +30,8 @@ RESET:
     dbgprintln "Starting up"
 
     ; set up other things
-    rcall setup_lcd
-    rcall setup_timer
+    rcall lcd_init
+    rcall timer_init
     
     ; enable interrupts
     sei

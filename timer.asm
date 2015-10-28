@@ -1,4 +1,4 @@
-setup_timer:
+timer_init:
     push r16
 
     ldi r16, 0
