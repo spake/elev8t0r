@@ -1,6 +1,3 @@
-.def State = r20
-.def CurrentFloor = r21
-
 .dseg
 FloorReqs:
     .byte 10

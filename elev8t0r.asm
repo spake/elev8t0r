@@ -17,9 +17,13 @@ FloorTimer:
 .include "lcd.asm"
 .include "math.asm"
 .include "sleep.asm"
-.include "state.asm"
 .include "timer.asm"
 .include "uart.asm"
+.include "keypad.asm"
+
+.def State = r20
+.def CurrentFloor = r21
+.include "state.asm"
 
 RESET:
     ; initialise stack
@@ -35,6 +39,7 @@ RESET:
     ; set up other things
     rcall lcd_init
     rcall timer_init
+    rcall keypad_init
     
     ; enable interrupts
     sei
@@ -52,6 +57,7 @@ main:
     dbgprintln "Entering state loop"
 
 main_loop:
+    rcall keypad_update
 
     ; check if moving
     sbrs State, STATE_MOVING
@@ -73,7 +79,6 @@ main_loop_moving:
 
     rcall update_lcd
 main_loop_moving_done:
-
 
 main_loop_end:
     rjmp main_loop
