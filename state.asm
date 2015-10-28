@@ -380,6 +380,9 @@ do_state_waiting:
     rcall is_current_floor_requested
     breq_long to_door_opening
 
+    rcall pushbutton_1_released
+    breq_long to_door_opening
+
     rcall floors_above_requested
     breq_long to_moving_up
     
@@ -445,19 +448,33 @@ do_state_door_opening_check_open:
 ; STATE_DOOR_OPEN
 do_state_door_open:
     cpi Emergency, 1
-    brne do_state_door_open_wait
+    brne do_state_door_open_nonemergency
     cpi Floor, 0
     breq_long emergency_halt
     rjmp to_door_closing
 
+do_state_door_open_nonemergency:
+    rcall pushbutton_0_released
+    brge_long to_door_closing
+
+    ; If the Open button is helf down while the door is open,
+    ; the door should remain open until the button is released
+    rcall pushbutton_1_down
+    brne do_state_door_open_wait
+
+    dbgprintln "its open"
+    clear16 DoorOpenTimer
+
 do_state_door_open_wait:
-    ; TODO: close button
     cpi16 DoorOpenTimer, 3000
     brge_long to_door_closing
     ret
 
 ; STATE_DOOR_CLOSING
 do_state_door_closing:
+    rcall pushbutton_1_released
+    breq_long to_door_opening
+
     cpi16 DoorClosingTimer, 1000
     brge_long to_waiting
     ret

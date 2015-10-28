@@ -33,12 +33,14 @@ pushbutton_0_down:
     load8R r16, pb0_v
     cpi r16, 1
     pop r16
+    ret
 
 pushbutton_1_down:
     push r16
     load8R r16, pb1_v
     cpi r16, 1
     pop r16
+    ret
 
 .macro pushbutton_cmp_vals
     push r16
