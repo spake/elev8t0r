@@ -12,6 +12,32 @@
     st Y, temp
 .endmacro
 
+; sets X to the value pointed to by Z in dseg
+.macro load16
+    push ZH
+    push ZL
+
+    loadZ @0
+    ld XL, Z+
+    ld XH, Z
+
+    pop ZL
+    pop ZH
+.endmacro
+
+; sets the value pointed to by Z in dseg to X
+.macro store16
+    push ZH
+    push ZL
+
+    loadZ @0
+    st Z+, XL
+    st Z, XH
+
+    pop ZL
+    pop ZH
+.endmacro
+
 #define CODE(x) ((x) << 1)
 
 .macro debugstr

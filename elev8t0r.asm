@@ -1,12 +1,21 @@
 .include "m2560def.inc"
 
+.dseg
+Msec1:
+    .byte 2
+
+.cseg
 .org 0
+    jmp RESET
+.org OC0Aaddr
+    jmp timer0OC
     jmp RESET
 
 .include "macros.asm"
 .include "lcd.asm"
 .include "math.asm"
 .include "sleep.asm"
+.include "timer.asm"
 .include "uart.asm"
 
 RESET:
@@ -16,9 +25,16 @@ RESET:
     ldi r16, high(RAMEND)
     out SPH, r16
 
-    ; set up things
-    rcall setup_lcd
+    ; initialise uart for debugging
     rcall uart_init
+    debugstr "Starting up"
+
+    ; set up other things
+    rcall setup_lcd
+    rcall setup_timer
+    
+    ; enable interrupts
+    sei
 
     ; print demo strings to lcd
     loadZ CODE(welcome_str_1)
@@ -29,8 +45,22 @@ RESET:
     loadZ CODE(welcome_str_2)
     rcall lcd_puts
 
-    debugstr "Welcome..."
-    debugstr "...to the world of tomorrow!"
+    debugstr "Waiting for Msec1 to be non-zero"
+loop:
+    load16 Msec1
+
+    cpi XH, 4
+    brge loop_print
+
+    rjmp loop
+loop_print:
+    debugstr "ping"
+
+    clr XL
+    clr XH
+    store16 Msec1
+
+    rjmp loop
 
 halt:
     rjmp halt
