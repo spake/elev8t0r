@@ -26,9 +26,7 @@ timer0_handler:
     in r16, SREG
     push r16
 
-    load16X LedsTimer
-    adiw X, 1
-    store16X LedsTimer
+    inc16 LedsTimer
 
     ; restore SREG
     pop r16

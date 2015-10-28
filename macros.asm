@@ -104,6 +104,18 @@
     pop XL
 .endmacro
 
+.macro inc16
+    push XH
+    push XL
+
+    load16X @0
+    adiw X, 1
+    store16X @0
+
+    pop XL
+    pop XH
+.endmacro
+
 ; clears value pointed to by @0
 .macro clear16
     store16 @0, 0
