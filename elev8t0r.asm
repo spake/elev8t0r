@@ -63,13 +63,15 @@ main:
 main_loop:
     rcall keypad_update
 
+    ldi r16, KEY_0
+    rcall keypad_is_released
+
     ; check if moving
     sbrs State, STATE_MOVING
     rjmp main_loop_moving_done
 main_loop_moving:
     ; check if 2 seconds has elapsed
-    load16X FloorTimer
-    cpi16X 2000
+    cpi16 FloorTimer, 2000
     brlt main_loop
 
     ; reset floor timer
