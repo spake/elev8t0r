@@ -52,8 +52,10 @@ wait_loop:
     brlt wait_loop
 
 wait_ping:
-    dbgprintln "ping"
     clear16 Msec1
+    dbgprintln "ping"
+    DBGREG(XH)
+    DBGREG(XL)
     rjmp wait_loop
 
 halt:
