@@ -1,9 +1,9 @@
-.dseg
-State:
-    .byte 1
-CurrentFloor:
-    .byte 1
+.def State = r20
+.def CurrentFloor = r21
 
+.dseg
+FloorReqs:
+    .byte 10
 
 .cseg
 
@@ -23,8 +23,7 @@ update_lcd:
 
     lcdprint "Floor: "
 
-    load8X CurrentFloor
-    mov r16, XL
+    mov r16, CurrentFloor
     rcall lcd_draw_number
 
     ret

@@ -3,6 +3,8 @@
 .dseg
 Msec1:
     .byte 2
+FloorTimer:
+    .byte 2
 
 .cseg
 .org 0
@@ -37,39 +39,44 @@ RESET:
     ; enable interrupts
     sei
 
-    ; print demo strings to lcd
-    loadZ CODE(welcome_str_1)
-    rcall lcd_puts
-
-    rcall lcd_set_line_2
-
-    loadZ CODE(welcome_str_2)
-    rcall lcd_puts
-
+main:
     ; initialise state
-    store8 State, 0
+    ldi State, 0
 
     ; initialise current floor
-    store8 CurrentFloor, 0
+    ldi CurrentFloor, 0
+
+    ; do initial LCD update
+    rcall update_lcd
 
     dbgprintln "Entering state loop"
 
-    rcall update_lcd
-
 main_loop:
+
+    ; check if moving
+    sbrs State, STATE_MOVING
+    rjmp main_loop_moving_done
+main_loop_moving:
+    ; check if 2 seconds has elapsed
+    load16X FloorTimer
+    cpi16X 2000
+    brlt main_loop
+
+    ; reset floor timer
+    clear16 FloorTimer
+
+    ; time to move
+    inc CurrentFloor
+
+    ; set not moving any more
+    cbr State, (1 << STATE_MOVING)
+
+    rcall update_lcd
+main_loop_moving_done:
+
+
+main_loop_end:
     rjmp main_loop
-
-wait_loop:
-    load16X Msec1
-    cpi16X 1000
-    brlt wait_loop
-
-wait_ping:
-    clear16 Msec1
-    dbgprintln "ping"
-    DBGREG(XH)
-    DBGREG(XL)
-    rjmp wait_loop
 
 welcome_str_1: .db "    elev8t0r    ", 0
 welcome_str_2: .db "   by Group F6  ", 0

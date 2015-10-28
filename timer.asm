@@ -30,6 +30,10 @@ timer0_handler:
     adiw X, 1
     store16X Msec1
 
+    load16X FloorTimer
+    adiw X, 1
+    store16X FloorTimer
+
     ; restore SREG
     pop r16
     out SREG, r16

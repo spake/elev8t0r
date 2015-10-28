@@ -106,6 +106,30 @@
     pop YH
 .endmacro
 
+; loads @1th value of array pointed to by @0 into XL
+.macro arrayLoadX
+    push ZH
+    push ZL
+
+    loadZ @0
+    ld XL, Z+@1
+
+    pop ZL
+    pop ZH
+.endmacro
+
+; stores XL into @1th value of array pointed to by @0
+.macro arrayStoreX
+    push ZH
+    push ZL
+
+    loadZ @0
+    st Z+@1, XL
+
+    pop ZL
+    pop ZH
+.endmacro
+
 #define CODE(x) ((x) << 1)
 
 .macro lcdprint
