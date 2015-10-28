@@ -39,7 +39,7 @@
     push XL
 
     loadX @1
-    load16X @0
+    store16X @0
 
     pop XL
     pop XH
