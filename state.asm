@@ -60,6 +60,22 @@ state_init_end:
 get_move_progress_end:
 .endmacro
 
+state_fix_lcd:
+    rcall lcd_clear_display
+
+    lcd_set_pos 0, 6
+    do_lcd_data 0
+    do_lcd_data 1
+    do_lcd_data 4
+    do_lcd_data 5
+
+    lcd_set_pos 1, 6
+    do_lcd_data 2
+    do_lcd_data 3
+    do_lcd_data 6
+    do_lcd_data 7
+    ret
+
 state_update_lcd:
     push r16
     push r17
@@ -83,7 +99,7 @@ state_update_lcd_up:
 state_update_lcd_up1:
     ; 0 <= r19 <= 4
     mov r17, r19
-    subi r17, 250 ; r17 += 6
+    subi r17, -6 ; r17 += 6
     ; 5 <= r17 <= 9
     rjmp state_update_lcd_end
 state_update_lcd_up2:
@@ -103,7 +119,7 @@ state_update_lcd_down1:
     ; want r17 := 4 - r19
     mov r17, r19
     com r17
-    subi r17, 251 ; r17 += 5
+    subi r17, -5 ; r17 += 5
     ; 0 <= r17 <= 4
     rjmp state_update_lcd_end
 state_update_lcd_down2:
@@ -112,7 +128,7 @@ state_update_lcd_down2:
     mov r17, r19
     subi r17, 5
     com r17
-    subi r17, 246 ; r17 += 10
+    subi r17, -10 ; r17 += 10
     ; 5 <= r17 <= 9
     dec r16
 
@@ -289,9 +305,9 @@ emergency_halt:
 
     ; Print the required message on the LCD
     rcall lcd_clear_display
-    lcdprint "Emergency"
+    lcdprint "   Emergency!   "
     rcall lcd_set_line_2
-    lcdprint "Call 000"
+    lcdprint "    Call 000    "
 
     clear16 StrobeTimer
 emergency_halt_loop:
@@ -308,6 +324,9 @@ emergency_halt_loop:
 
     ldi Emergency, 0
     strobe_off
+
+    rcall state_fix_lcd
+
     ret
 
 ; routine to check if any floors in a given range [start, end) are requested

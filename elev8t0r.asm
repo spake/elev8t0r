@@ -23,7 +23,6 @@ StrobeTimer:
 
 .include "font.asm"
 .include "macros.asm"
-.include "lcd.asm"
 .include "math.asm"
 .include "motor.asm"
 .include "sleep.asm"
@@ -33,6 +32,7 @@ StrobeTimer:
 .include "keypad.asm"
 .include "pushbutton.asm"
 .include "leds.asm"
+.include "lcd.asm"
 
 .def State = r19
 .def Floor = r20
@@ -61,20 +61,10 @@ RESET:
     rcall pushbutton_init
     rcall state_init
 
+    rcall state_fix_lcd
+
     ; enable interrupts
     sei
-
-    lcd_set_pos 0, 6
-    do_lcd_data 0
-    do_lcd_data 1
-    do_lcd_data 4
-    do_lcd_data 5
-
-    lcd_set_pos 1, 6
-    do_lcd_data 2
-    do_lcd_data 3
-    do_lcd_data 6
-    do_lcd_data 7
 
 main:
     ldi State, STATE_WAITING
