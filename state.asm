@@ -18,6 +18,8 @@ state_init:
     push XH
     push XL
 
+    ; zero out the floor request array
+
     loadX FloorRequest
 
     ldi r18, 0
@@ -124,6 +126,7 @@ state_update_requests:
     dbgprintln "EMERGENCY"
 
 state_update_requests_key:
+    ; check if any keys are pressed and request the corresponding floors
     ldi r16, KEY_0
     loadZ FloorRequest
 state_update_requests_key_loop:
@@ -159,6 +162,7 @@ state_update_requests_end:
     ret
 
 state_update:
+    ; run the handler routine for the current state
     cpi State, STATE_WAITING
     breq_long do_state_waiting
     cpi State, STATE_MOVING_UP
@@ -180,8 +184,10 @@ is_floor_requested:
 
     cpi Emergency, 1
     brne is_floor_requested_check
-    cpi Floor, 0
-    breq is_floor_requested_done
+    ; dbgprintln "is_floor_requested emergency"
+    ; DBGREG(Floor)
+    cpi r16, 0
+    rjmp is_floor_requested_done
 
 is_floor_requested_check:
     loadX FloorRequest
@@ -238,6 +244,7 @@ run_move:
     rjmp run_move_end 
 
 run_move_stop:
+    ; dbgprintln "run_move_stop"
     rcall to_door_opening
 
 run_move_end:
@@ -258,10 +265,11 @@ emergency_strobe_off:
 emergency_strobe_end:
     ret
 
-
+; routine to handle an emergency
 emergency_halt:
     dbgprintln "emergency_halt"
 
+    ; Print the required message on the LCD
     rcall lcd_clear_display
     lcdprint "Emergency"
     rcall lcd_set_line_2
@@ -270,9 +278,12 @@ emergency_halt:
     clear16 StrobeTimer
 emergency_halt_loop:
     rcall keypad_update
+    ; "The strobe should blink several times per second"
     rcall emergency_strobe
     rcall sleep_5ms
 
+    ; "The lift should resume normal operation only when the '*' button is
+    ;  pressed again"
     ldi r16, KEY_STAR
     rcall keypad_is_released
     brne emergency_halt_loop
@@ -281,7 +292,8 @@ emergency_halt_loop:
     strobe_off
     ret
 
-; r16 = start floor  [start, end)
+; routine to check if any floors in a given range [start, end) are requested
+; r16 = start floor
 ; r17 = end floor
 floors_range_requested:
     push r18
@@ -322,7 +334,7 @@ floors_range_requested_end:
     pop r18
     ret
 
-
+; debug routine to print which floors have requests
 dbg_floors_requested:
     push r18
     push r19
@@ -428,8 +440,10 @@ to_door_open:
 to_door_closing:
     dbgprintln "-> STATE_DOOR_CLOSING"
 
+    ; "To indicate the door is opening or closing, the motor should spin."
     motor_on
 
+    ; finished with this floor, clear its request
     rcall clear_current_floor_request
 
     ldi State, STATE_DOOR_CLOSING
@@ -439,32 +453,34 @@ to_door_closing:
 ; STATE_WAITING
 do_state_waiting:
     cpi Emergency, 1
-    breq_long to_moving_down
+    breq_long to_moving_down ; move down if there's an emergency
 
     rcall is_current_floor_requested
-    breq_long to_door_opening
+    breq_long to_door_opening ; open the doors if ther current floors is requested
 
+    ; "If the Open button is pushed while the lift is stopped at a floor,
+    ;  it should open"
     rcall pushbutton_1_released
     breq_long to_door_opening
 
     rcall floors_above_requested
-    breq_long to_moving_up
+    breq_long to_moving_up ; move up if there's requested floors above
     
     rcall floors_below_requested
-    breq_long to_moving_down
+    breq_long to_moving_down ; move down if there's requested floors below
 
     ret
 
 ; STATE_MOVING_UP
 do_state_moving_up:
     cpi Emergency, 1
-    breq_long to_moving_down
+    breq_long to_moving_down ; start moving down if there's an emergency
 
     rcall floors_requested
-    brne_long to_waiting
+    brne_long to_waiting ; wait if there's no requested floors
 
     rcall floors_above_requested
-    brne_long to_moving_down
+    brne_long to_moving_down ; move down if there's no request floors above
 
     ldi r16, 1
     rcall run_move
@@ -476,10 +492,10 @@ do_state_moving_down:
     breq do_state_moving_down_emergency
 
     rcall floors_requested
-    brne_long to_waiting
+    brne_long to_waiting ; wait if there's no requested floors
 
     rcall floors_below_requested
-    brne_long to_moving_up
+    brne_long to_moving_up ; move up if there's no requested floors below
 
 do_state_moving_down_move:
     ldi r16, -1
@@ -487,6 +503,8 @@ do_state_moving_down_move:
     ret
 
 do_state_moving_down_emergency:
+    ; if we're in an emergency and at floor 0, open the doors, else just
+    ; move down
     cpi Floor, 0
     breq_long to_door_opening
     rjmp do_state_moving_down_move
@@ -501,6 +519,7 @@ do_state_door_opening:
     cpi Floor, 0
     breq do_state_door_opening_check_open
 
+    ; if we're in an emergency and not on floor 0, immediately close the door
     rjmp to_door_closing
 
 do_state_door_opening_check_open:
@@ -515,30 +534,38 @@ do_state_door_open:
     brne do_state_door_open_nonemergency
     cpi Floor, 0
     breq_long emergency_halt
+    ; if we're in an emergency and not at floor 0, close the door immediately
     rjmp to_door_closing
 
 do_state_door_open_nonemergency:
+    ; "If the Close button is pushed inside the life, start
+    ; closing the door without waiting"
     rcall pushbutton_0_released
     brge_long to_door_closing
 
-    ; If the Open button is helf down while the door is open,
-    ; the door should remain open until the button is released
+    ; "If the Open button is helf down while the door is open,
+    ; the door should remain open until the button is released"
     rcall pushbutton_1_down
     brne do_state_door_open_wait
 
+    ; hold the door open by resetting the open timer
     dbgprintln "its open"
     clear16 DoorOpenTimer
 
 do_state_door_open_wait:
+    ; close the door if 3 seconds have passed
     cpi16 DoorOpenTimer, 3000
     brge_long to_door_closing
     ret
 
 ; STATE_DOOR_CLOSING
 do_state_door_closing:
+    ; "If the Open button is pushed while the lift is closing,
+    ; the door should stop-closing"
     rcall pushbutton_1_released
     breq_long to_door_opening
 
+    ; closing the door takes 1 second
     cpi16 DoorClosingTimer, 1000
     brge_long to_waiting
     ret
