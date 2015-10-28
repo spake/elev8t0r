@@ -116,8 +116,10 @@ is_floor_requested:
 
     cpi Emergency, 1
     brne is_floor_requested_check
-    cpi Floor, 0
-    breq is_floor_requested_done
+    ; dbgprintln "is_floor_requested emergency"
+    ; DBGREG(Floor)
+    cpi r16, 0
+    rjmp is_floor_requested_done
 
 is_floor_requested_check:
     loadX FloorRequest
@@ -174,6 +176,7 @@ run_move:
     rjmp run_move_end 
 
 run_move_stop:
+    ; dbgprintln "run_move_stop"
     rcall to_door_opening
 
 run_move_end:
@@ -454,11 +457,13 @@ do_state_door_open:
     rjmp to_door_closing
 
 do_state_door_open_nonemergency:
+    ; "If the Close button is pushed inside the life, start
+    ; closing the door without waiting"
     rcall pushbutton_0_released
     brge_long to_door_closing
 
-    ; If the Open button is helf down while the door is open,
-    ; the door should remain open until the button is released
+    ; "If the Open button is helf down while the door is open,
+    ; the door should remain open until the button is released"
     rcall pushbutton_1_down
     brne do_state_door_open_wait
 
@@ -472,6 +477,8 @@ do_state_door_open_wait:
 
 ; STATE_DOOR_CLOSING
 do_state_door_closing:
+    ; "If the Open button is pushed while the lift is closing,
+    ; the door should stop-closing"
     rcall pushbutton_1_released
     breq_long to_door_opening
 
