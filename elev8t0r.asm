@@ -48,18 +48,18 @@ RESET:
     out SPH, r16
 
     ; initialise uart for debugging
-    rcall uart_init
+    call uart_init
     dbgprintln "Starting up"
 
     ; set up other things
-    rcall lcd_init
-    rcall timer_init
-    rcall keypad_init
-    rcall strobe_init
-    rcall motor_init
-    rcall leds_init
-    rcall pushbutton_init
-    rcall state_init
+    call lcd_init
+    call timer_init
+    call keypad_init
+    call strobe_init
+    call motor_init
+    call leds_init
+    call pushbutton_init
+    call state_init
 
     ; enable interrupts
     sei
@@ -89,17 +89,17 @@ welcome_loop2:
     clear16 MoveTimer
 
     ; set up LCD properly
-    rcall state_fix_lcd
+    call state_fix_lcd
     dbgprintln "Entering state loop"
 
 main_loop:
-    rcall keypad_update
-    rcall leds_update
-    rcall pushbutton_update
-    rcall state_update_lcd
-    rcall state_update_requests
-    rcall state_update
-    rcall sleep_5ms
+    call keypad_update
+    call leds_update
+    call pushbutton_update
+    call state_update_lcd
+    call state_update_requests
+    call state_update
+    call sleep_5ms
 
 main_loop_end:
     rjmp main_loop
