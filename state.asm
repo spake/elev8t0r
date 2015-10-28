@@ -101,7 +101,14 @@ state_update:
 
 
 run_move:
-    ; TODO
+    cpi16 MoveTimer, 2000
+    brlt run_move_end
+
+    add Floor, r16
+
+    rcall to_door_opening
+
+run_move_end:
     ret
 
 emergency_halt:
@@ -175,11 +182,13 @@ to_waiting:
 to_moving_down:
     dbgprintln "-> STATE_MOVING_DOWN"
     ldi State, STATE_MOVING_DOWN
+    clear16 MoveTimer
     ret
 
 to_moving_up:
     dbgprintln "-> STATE_MOVING_UP"
     ldi State, STATE_MOVING_UP
+    clear16 MoveTimer
     ret
 
 to_door_opening:
