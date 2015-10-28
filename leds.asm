@@ -19,6 +19,9 @@ leds_init:
     clr r16
     out PORTC, r16
 
+    store8 LedPrevState, LED_STATE_CLOSE
+    store8 LedCounter, 0
+
     pop r16
     ret
 
