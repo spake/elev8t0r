@@ -11,6 +11,8 @@ MoveTimer:
     .byte 2
 LedsTimer:
     .byte 2
+StrobeTimer:
+    .byte 2
 
 .cseg
 .org 0

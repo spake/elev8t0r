@@ -52,6 +52,14 @@ state_update_requests:
     push ZL
     push ZH
 
+    ldi r16, KEY_STAR
+    rcall keypad_is_released
+    brne state_update_requests_key
+
+    ldi Emergency, 1
+    dbgprintln "EMERGENCY"
+
+state_update_requests_key:
     ldi r16, KEY_0
     loadZ FloorRequest
 state_update_requests_key_loop:
@@ -106,6 +114,12 @@ is_floor_requested:
     push XH
     push XL
 
+    cpi Emergency, 1
+    brne is_floor_requested_check
+    cpi Floor, 0
+    breq is_floor_requested_done
+
+is_floor_requested_check:
     loadX FloorRequest
     ldi r17, 0
     add XL, r16
@@ -113,6 +127,32 @@ is_floor_requested:
 
     ld r16, X
     cpi r16, 1
+
+is_floor_requested_done:
+    pop XL
+    pop XH
+    pop r17
+    ret
+
+is_current_floor_requested:
+    push r16
+    mov r16, Floor
+    rcall is_floor_requested
+    pop r16
+    ret
+
+clear_current_floor_request:
+    push r17
+    push XH
+    push XL
+    ; clear the current floors request
+    loadX FloorRequest
+    ldi r17, 0
+    add XL, Floor
+    adc XH, r17
+    st X, r17
+
+    rcall dbg_floors_requested
 
     pop XL
     pop XH
@@ -127,8 +167,7 @@ run_move:
 
     DBGREG(Floor)
 
-    mov r16, Floor
-    rcall is_floor_requested
+    rcall is_current_floor_requested
     breq run_move_stop
 
     clear16 MoveTimer
@@ -140,8 +179,42 @@ run_move_stop:
 run_move_end:
     ret
 
+emergency_strobe:
+    cpi16 StrobeTimer, 400
+    brge emergency_strobe_reset
+
+    cpi16 StrobeTimer, 200
+    brlt emergency_strobe_off
+    strobe_on
+    rjmp emergency_strobe_end
+emergency_strobe_reset:
+    clear16 StrobeTimer
+emergency_strobe_off:
+    strobe_off
+emergency_strobe_end:
+    ret
+
+
 emergency_halt:
-    ; TODO
+    dbgprintln "emergency_halt"
+
+    rcall lcd_clear_display
+    lcdprint "Emergency"
+    rcall lcd_set_line_2
+    lcdprint "Call 000"
+
+    clear16 StrobeTimer
+emergency_halt_loop:
+    rcall keypad_update
+    rcall emergency_strobe
+    rcall sleep_5ms
+
+    ldi r16, KEY_STAR
+    rcall keypad_is_released
+    brne emergency_halt_loop
+
+    ldi Emergency, 0
+    strobe_off
     ret
 
 ; r16 = start floor  [start, end)
@@ -270,29 +343,13 @@ to_moving_up:
     ret
 
 to_door_opening:
-    push r17
-    push XH
-    push XL
 
     dbgprintln "-> STATE_DOOR_OPENING"
 
     motor_on
-    
-    ; clear the current floors request
-    loadX FloorRequest
-    ldi r17, 0
-    add XL, Floor
-    adc XH, r17
-    st X, r17
-
-    rcall dbg_floors_requested
 
     ldi State, STATE_DOOR_OPENING
     clear16 DoorOpeningTimer
-
-    pop XL
-    pop XH
-    pop r17
     ret
 
 to_door_open:
@@ -309,6 +366,8 @@ to_door_closing:
 
     motor_on
 
+    rcall clear_current_floor_request
+
     ldi State, STATE_DOOR_CLOSING
     clear16 DoorClosingTimer
     ret
@@ -317,7 +376,10 @@ to_door_closing:
 do_state_waiting:
     cpi Emergency, 1
     breq_long to_moving_down
-    
+
+    rcall is_current_floor_requested
+    breq_long to_door_opening
+
     rcall floors_above_requested
     breq_long to_moving_up
     
@@ -376,19 +438,19 @@ do_state_door_opening:
 
 do_state_door_opening_check_open:
     cpi16 DoorOpeningTimer, 1000
-    brlt do_state_door_opening_not_open
-
-    cpi Emergency, 1
-    breq_long emergency_halt
-
-    rjmp to_door_open
-
-do_state_door_opening_not_open:
+    brge_long to_door_open
     ret
 
 
 ; STATE_DOOR_OPEN
 do_state_door_open:
+    cpi Emergency, 1
+    brne do_state_door_open_wait
+    cpi Floor, 0
+    breq_long emergency_halt
+    rjmp to_door_closing
+
+do_state_door_open_wait:
     ; TODO: close button
     cpi16 DoorOpenTimer, 3000
     brge_long to_door_closing
@@ -399,6 +461,9 @@ do_state_door_closing:
     cpi16 DoorClosingTimer, 1000
     brge_long to_waiting
     ret
+
+;    cpi Emergency, 1
+;    breq_long emergency_halt
 
 
 
