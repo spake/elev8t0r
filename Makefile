@@ -12,6 +12,9 @@ elev8t0r.hex: $(SRCS)
 program: elev8t0r.hex
 	$(PROGRAM) elev8t0r.hex
 
+run: program
+	picocom /dev/tty.usb*
+
 clean:
 	rm -f elev8t0r.hex
 

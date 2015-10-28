@@ -61,12 +61,8 @@ uart_puts_end:
     pop r16
     ret
 
-; writes a string to the UART, followed by a newline
-; input: Z, addr of null-terminated string in code segment
-uart_println:
+uart_newline:
     push r16
-
-    rcall uart_puts
 
     ldi r16, '\r'
     rcall uart_putc
@@ -74,4 +70,56 @@ uart_println:
     rcall uart_putc
 
     pop r16
+    ret
+
+; writes a string to the UART, followed by a newline
+; input: Z, addr of null-terminated string in code segment
+uart_println:
+    push r16
+
+    rcall uart_puts
+    rcall uart_newline
+
+    pop r16
+    ret
+
+; draws an 8-bit number to the screen in decimal
+; input: r16
+uart_print_number:
+    push r17
+    push r18
+    push r20
+
+    ldi r18, 0 ; digit count
+uart_print_number_loop:
+    ldi r17, 10
+
+    ; get r16 = (r16 / 10) and r17 = (r16 % 10)
+    rcall divide
+
+    ldi r20, '0'
+    add r20, r17
+
+    ; push digits (from least to most significant) onto the stack
+    push r20
+    inc r18
+
+    cpi r16, 0
+    breq uart_print_number_print
+    rjmp uart_print_number_loop
+uart_print_number_print:
+    cpi r18, 0
+    breq uart_print_number_finish
+
+    ; pop digit from stack (from most to least significant) and print
+    pop r20
+    mov r16, r20
+    rcall uart_putc
+
+    dec r18
+    rjmp uart_print_number_print
+uart_print_number_finish:
+    pop r20
+    pop r18
+    pop r17
     ret
