@@ -15,6 +15,13 @@ timer_init:
     ldi r16, 1 << OCIE0A
     sts TIMSK0, r16
 
+    clear16 DoorOpeningTimer
+    clear16 DoorOpenTimer
+    clear16 DoorClosingTimer
+    clear16 MoveTimer
+    clear16 LedsTimer
+    clear16 StrobeTimer
+
     pop r16
     ret
 
@@ -31,6 +38,7 @@ timer0_handler:
     inc16 DoorClosingTimer
     inc16 MoveTimer
     inc16 LedsTimer
+    inc16 StrobeTimer
 
     ; restore SREG
     pop r16

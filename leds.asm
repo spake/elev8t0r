@@ -45,7 +45,7 @@ leds_update:
     cpi State, STATE_DOOR_CLOSING
     breq leds_update_state_door_close
     cpi State, STATE_WAITING
-    breq leds_update_state_door_open
+    breq leds_update_state_door_close
 
     ; bad state
     rjmp leds_update_done

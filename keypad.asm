@@ -48,6 +48,7 @@ keypad_init:
     out PORTC, r16
 
     store8 keypad_v, KEY_NONE
+    store8 keypad_last_v, KEY_NONE
 
     pop r16
     ret
